@@ -24,6 +24,7 @@
 
 #include <Wire.h>
 #include "DHT.h"
+#include <math.h>
 
 #define BMP085_ADDRESS 0x77  // I2C address of BMP085
 const unsigned char OSS = 0;  // Oversampling Setting
@@ -85,7 +86,10 @@ void loop()
   Serial.print("Pressure: ");
   Serial.print(pressure/100.0, 3);
   Serial.println(" hPa");
-  Serial.println(millis());
+  Serial.print("Dew point: ");
+  Serial.print(dp(t,h));
+  Serial.println(" *C");
+  // Serial.println(millis());
   Serial.println();
   delay(10000);
 }
@@ -245,5 +249,20 @@ unsigned long bmp085ReadUP()
   up = (((unsigned long) msb << 16) | ((unsigned long) lsb << 8) | (unsigned long) xlsb) >> (8-OSS);
   
   return up;
+}
+
+
+
+
+//calculates dew point from relative humidity and temperature:
+
+float dp(float t,float rh){
+  // constants from http://en.wikipedia.org/wiki/Dew_point#Calculating_the_dew_point
+  const float a=6.1121;
+  const float b=17.67;
+  const float c=243.5;
+  const float d=234.5;
+  float gm=log(rh/100*exp((b-t/d)*(t/(c+t))));
+   return(c*gm/(b-gm));
 }
 
