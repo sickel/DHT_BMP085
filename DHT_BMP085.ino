@@ -17,12 +17,15 @@
   wire library (Arduino 1.0.1). Changed Wire.send to Wire.write and 
   Wire.receive to Wire.read
   
+  Update (4/1/13 - Morten Sickel): Using BMP085 and a DHT-sensor 
+  (temperature and humidity)
+  
 */
 
 #include <Wire.h>
+#include "DHT.h"
 
 #define BMP085_ADDRESS 0x77  // I2C address of BMP085
-
 const unsigned char OSS = 0;  // Oversampling Setting
 
 // Calibration values
@@ -45,24 +48,44 @@ long b5;
 short temperature;
 long pressure;
 
+#define DHTPIN 2 // what pin the DHT is connected to
+#define DHTTYPE DHT11 // DHT 11
+//#define DHTTYPE DHT22   // DHT 22  (AM2302)
+//#define DHTTYPE DHT21   // DHT 21 (AM2301)
+
+
+DHT dht(DHTPIN, DHTTYPE);
+
+  
 void setup()
 {
   Serial.begin(9600);
   Wire.begin();
   bmp085Calibration();
+  dht.begin();
 }
 
 void loop()
 {
+  float h = dht.readHumidity();
+  float t = dht.readTemperature();
+  Serial.print("Relative humidity: ");
+  Serial.print(h);
+  Serial.println(" %");
+//  Serial.print("Temperature :");
+//  Serial.print(t);
+//  Serial.println(" *C");
+// Discarding - better accuracy from the bmp085
+  
   temperature = bmp085GetTemperature(bmp085ReadUT());
   pressure = bmp085GetPressure(bmp085ReadUP());
-  pressure=pressure;
   Serial.print("Temperature: ");
   Serial.print(temperature/10.0, 1);
   Serial.println(" *C");
   Serial.print("Pressure: ");
   Serial.print(pressure/100.0, 3);
   Serial.println(" hPa");
+  Serial.println(millis());
   Serial.println();
   delay(10000);
 }
