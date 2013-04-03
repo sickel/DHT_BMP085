@@ -20,6 +20,9 @@
   Update (4/1/13 - Morten Sickel): Using BMP085 and a DHT-sensor 
   (temperature and humidity)
   
+  Update (4/2/13 - Morten Sickel): Rewritten as a server that 
+  returns data when they are asked for
+  
 */
 
 #include <Wire.h>
@@ -68,6 +71,12 @@ void setup()
 
 void loop()
 {
+if(Serial.available()>0){
+  int inbyte=Serial.read();
+  while(Serial.available()>0){
+    // Eats all bytes waiting
+    int inbyte=Serial.read();
+  }
   float h = dht.readHumidity();
   float t = dht.readTemperature();
   Serial.print("Relative humidity: ");
@@ -89,9 +98,9 @@ void loop()
   Serial.print("Dew point: ");
   Serial.print(dp(t,h));
   Serial.println(" *C");
-  // Serial.println(millis());
+  Serial.println(millis());
   Serial.println();
-  delay(10000);
+}
 }
 
 // Stores all of the bmp085's calibration values into global variables
