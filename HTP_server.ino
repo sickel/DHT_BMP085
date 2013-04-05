@@ -20,6 +20,11 @@
   Update (4/1/13 - Morten Sickel): Using BMP085 and a DHT-sensor 
   (temperature and humidity)
   
+  Update (4/2/13 - Morten Sickel): Rewritten as a server that 
+  returns data when they are asked for
+  
+  Update (5/1/13 - Morten Sickel): Should only return once per line 
+  received
 */
 
 #include <Wire.h>
@@ -68,30 +73,47 @@ void setup()
 
 void loop()
 {
+if(Serial.available()>0){
+  int inbyte=Serial.read();
+  while(Serial.available()>0){
+    // Eats all bytes waiting
+    int inbytex=Serial.read();
+  }
   float h = dht.readHumidity();
   float t = dht.readTemperature();
-  Serial.print("Relative humidity: ");
-  Serial.print(h);
-  Serial.println(" %");
-//  Serial.print("Temperature :");
-//  Serial.print(t);
-//  Serial.println(" *C");
-// Discarding - better accuracy from the bmp085
   
   temperature = bmp085GetTemperature(bmp085ReadUT());
   pressure = bmp085GetPressure(bmp085ReadUP());
-  Serial.print("Temperature: ");
-  Serial.print(temperature/10.0, 1);
-  Serial.println(" *C");
-  Serial.print("Pressure: ");
-  Serial.print(pressure/100.0, 3);
-  Serial.println(" hPa");
-  Serial.print("Dew point: ");
-  Serial.print(dp(t,h));
-  Serial.println(" *C");
-  // Serial.println(millis());
-  Serial.println();
-  delay(10000);
+  if((inbyte)==42){ // *
+    Serial.print(h);
+    Serial.print(';');
+    Serial.print(t);
+    Serial.print(';');
+    Serial.print(pressure);
+    Serial.print(';');
+    Serial.println(temperature);
+  }else{
+    Serial.println(inbyte);
+    Serial.print("Relative humidity: ");
+    Serial.print(h);
+    Serial.println(" %");
+  //  Serial.print("Temperature :");
+  //  Serial.print(t);
+  //  Serial.println(" *C");
+  // Discarding - better accuracy from the bmp085
+    Serial.print("Temperature: ");
+    Serial.print(temperature/10.0, 1);
+    Serial.println(" *C");
+    Serial.print("Pressure: ");
+    Serial.print(pressure/100.0, 3);
+    Serial.println(" hPa");
+    Serial.print("Dew point: ");
+    Serial.print(dp(t,h));
+    Serial.println(" *C");
+    Serial.println(millis());
+    Serial.println();
+  }
+}
 }
 
 // Stores all of the bmp085's calibration values into global variables
